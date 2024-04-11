@@ -1,0 +1,14 @@
+:root{
+    --cor-letra: white;
+    --cor-fundo: black;
+    --font-titulo: 28px;
+    --font-informação: 16px;
+}
+
+.container{
+    background-color:  var(--cor-fundo);
+    color: var(--cor-letra);
+
+}
+.titulo{
+}
