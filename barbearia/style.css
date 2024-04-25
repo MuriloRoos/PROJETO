@@ -1,14 +1,30 @@
-:root{
+:root {
+    --font-letra: "Poppins", sans-serif;
     --cor-letra: white;
-    --cor-fundo: black;
+    --cor-fundo: #080B16;
     --font-titulo: 28px;
     --font-informação: 16px;
 }
 
-.container{
-    background-color:  var(--cor-fundo);
+.container {
+    width: 620px;
+    height: 620px;
+    border: 1px solid black;
+    border-radius: 16px;
+    background-color: var(--cor-fundo);
     color: var(--cor-letra);
-
+    font-family: var(--font-letra);
 }
+
 .titulo{
+    display: flex;
+    justify-content: space-around;
+}
+
+.titulo h1{
+    font-size: var(--font-titulo);
+}
+
+.informacoes{
+    margin: 0 13% 0 13%;
 }
