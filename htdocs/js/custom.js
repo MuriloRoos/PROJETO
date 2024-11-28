@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Receber o SELETOR da janela modal cadastrar
     const cadastrarModal = new bootstrap.Modal(document.getElementById("cadastrarModal"));
 
+    // Receber o SELETOR da janela modal visualizar
+    const visualizarModal = new bootstrap.Modal(document.getElementById("visualizarModal"));
+
+    // Receber o SELETOR "msgViewEvento"
+    const msgViewEvento = document.getElementById('msgViewEvento');
+
     // Instanciar FullCalendar.Calendar e atribuir a variável calendar
     var calendar = new FullCalendar.Calendar(calendarEl, {
 
@@ -48,14 +54,26 @@ document.addEventListener('DOMContentLoaded', function () {
         // Identificar o clique do usuário sobre o evento
         eventClick: function (info) {
 
-            // Receber o SELETOR da janela modal visualizar
-            const visualizarModal = new bootstrap.Modal(document.getElementById("visualizarModal"));
+            // Apresentar os detalhes do evento
+            document.getElementById("visualizarEvento").style.display = "block";
+            document.getElementById("visualizarModalLabel").style.display = "block";   
+            
+            // Ocultar o formulário editar do evento
+            document.getElementById("editarEvento").style.display = "none";
+            document.getElementById("editarModalLabel").style.display = "none";  
 
             // Enviar para a janela modal os dados do evento
             document.getElementById("visualizar_id").innerText = info.event.id;
             document.getElementById("visualizar_title").innerText = info.event.title;
             document.getElementById("visualizar_start").innerText = info.event.start.toLocaleString();
             document.getElementById("visualizar_end").innerText = info.event.end !== null ? info.event.end.toLocaleString() : info.event.start.toLocaleString();
+
+            // Enviar os dados do evento para o formulario editar
+            document.getElementById("edit_id").value = info.event.id;
+            document.getElementById("edit_title").value = info.event.title;
+            document.getElementById("edit_start").value = converterData(info.event.start);
+            document.getElementById("edit_end").value = info.event.end !== null ? converterData(info.event.end): converterData(info.event.start);
+            document.getElementById("edit_color").value = info.event.backgroundColor;
 
             // Abrir a janela modal visualizar
             visualizarModal.show();
@@ -110,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const msgCadEvento = document.getElementById("msgCadEvento");
 
     // Receber o SELETOR do botão da janela modal cadastrar evento
-    const btnCadEvento = document.getElementById("btnCadEvento");
+    const btnCadEvento = document.getElementById("btncadEvento");
 
     // Somente acessa o IF quando existir o SELETOR "formCadEvento"
     if (formCadEvento) {
@@ -120,6 +138,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Não permitir a atualização da pagina
             e.preventDefault();
+
+            btnCadEvento.value = "Salvando...";
 
             // Receber os dados do formulário
             const dadosForm = new FormData(formCadEvento);
@@ -134,24 +154,23 @@ document.addEventListener('DOMContentLoaded', function () {
             const resposta = await dados.json();
 
             // Acessa o IF quando não cadastrar com sucesso
-            if (resposta['status']) {
+            if (!resposta['status']) {
 
-                // Enviar a mensagem para o HTML
-                document.getElementById("msgCadEvento").innerHTML = resposta['msg'];
-                //msgCadEvento.innerHTML = `<div class="alert alert-danger" role="alert">${resposta['msg']}</div>`;
+                // enviar mensagem para o HTML
+                msgCadEvento.innerHTML = `<div class="alert alert-danger" role="alert">${resposta['msg']}</div>`;
 
-            }else{
+            } else{
 
-                // Enviar a mensagem para o HTML
+                // enviar mensagem para o HTML
                 msg.innerHTML = `<div class="alert alert-success" role="alert">${resposta['msg']}</div>`;
 
                 // Enviar a mensagem para o HTML
                 msgCadEvento.innerHTML = "";
 
-                // Limpar o formulário
+                // limpa o formulário
                 formCadEvento.reset();
-
-                // Criar o objeto com os dados do evento
+                
+                //criar o objeto com os dados do evento
                 const novoEvento = {
                     id: resposta['id'],
                     title: resposta['title'],
@@ -160,24 +179,200 @@ document.addEventListener('DOMContentLoaded', function () {
                     end: resposta['end'],
                 }
 
-                // Adicionar o evento ao calendário
+                // Apresentar o evento no calendário
                 calendar.addEvent(novoEvento);
 
-                // Chamar a função para remover a mensagem após 3 segundo
+                // Chamar a função para remover a mensagem após 3 segundos
                 removerMsg();
 
                 // Fechar a janela modal
                 cadastrarModal.hide();
             }
 
+            //apresentar no botão o texto cadastrar
+            btnCadEvento.value = "Cadastrar";
 
         });
     }
 
-    // Função para remover a mensagem após 3 segundo
-    function removerMsg() {
-        setTimeout(() => {
-            document.getElementById('msg').innerHTML = "";
-        }, 3000)
+    // Função para remover a mensagem após 3 segundos
+    function removerMsg(){
+        setTimeout(() => {document.getElementById('msg').innerHTML = "";}, 3000)
     }
+
+    //Receber o SELETOR ocultar formulário editar evento e apresentar o detalhes do evento
+    const btnViewEditEvento = document.getElementById("btnViewEditEvento");
+
+    if(btnViewEditEvento){
+
+        // Aguardar o usuario clicar no botão editar
+        btnViewEditEvento.addEventListener("click", () => {
+
+            // Ocultar os detalhes do evento
+            document.getElementById("visualizarEvento").style.display = "none";
+            document.getElementById("visualizarModalLabel").style.display = "none";   
+            
+            // Apresentar o formulário editar do evento
+            document.getElementById("editarEvento").style.display = "block";
+            document.getElementById("editarModalLabel").style.display = "block";   
+        })
+    }
+
+    // Função para remover a mensagem após 3 segundos
+    function removerMsg(){
+        setTimeout(() => {document.getElementById('msg').innerHTML = "";}, 3000)
+    }
+
+    //Receber o SELETOR ocultar formulário editar evento e apresentar o detalhes do evento
+    const btnViewEvento = document.getElementById("btnViewEvento");
+
+    if(btnViewEvento){
+
+        // Aguardar o usuario clicar no botão editar
+        btnViewEvento.addEventListener("click", () => {
+
+            // Apresentar os detalhes do evento
+            document.getElementById("visualizarEvento").style.display = "block";
+            document.getElementById("visualizarModalLabel").style.display = "block";   
+            
+            // Ocultar o formulário editar do evento
+            document.getElementById("editarEvento").style.display = "none";
+            document.getElementById("editarModalLabel").style.display = "none";   
+        })
+    }
+
+    //receber o botão do formulario editar
+    const formEditEvento = document.getElementById("formEditEvento");
+
+    // Receber o SELETOR da mensagem editar evento
+    const msgEditEvento = document.getElementById("msgEditEvento");
+
+    // Receber o SELETOR do botão editar evento
+    const btnEditEvento = document.getElementById("btnEditEvento");
+
+    // Somente acessa o IF quando existir o SELETOR "formEditEvento"
+    if (formEditEvento) {
+
+        // Aguardar o usuario clicar no botao editar
+        formEditEvento.addEventListener("submit", async (e) => {
+
+            // Não permitir a atualização da pagina
+            e.preventDefault();
+
+            // Apresentar no botão o texto salvando
+            btnEditEvento.value = "Salvando...";
+
+            // Receber os dados do formulário
+            const dadosForm = new FormData(formEditEvento);
+
+            // Chamar o arquivo PHP responsável em editar o evento
+            const dados = await fetch("editar_evento.php", {
+                method: "POST",
+                body: dadosForm
+            });
+
+            // Realizar a leitura dos dados retornados pelo PHP
+            const resposta = await dados.json();
+
+            // Acessa o IF quando não editar com sucesso
+            if (!resposta['status']) {
+
+                // enviar mensagem para o HTML
+                msgCadEvento.innerHTML = `<div class="alert alert-danger" role="alert">${resposta['msg']}</div>`;
+
+            } else{
+
+                // enviar mensagem para o HTML
+                msg.innerHTML = `<div class="alert alert-success" role="alert">${resposta['msg']}</div>`;
+
+                // Enviar a mensagem para o HTML
+                msgCadEvento.innerHTML = "";
+
+                // limpa o formulário
+                formCadEvento.reset();
+
+                // Recuperar o evento no fullCalendar pelo id
+                const eventoExiste = calendar.getEventById(resposta['id']);
+
+                //Verificar se encontrou o evento no FullCalendar pelo id
+                if(eventoExiste){
+
+                    // Atualizar os atributos do evento com os novos valores do banco de dados
+                    eventoExiste.setProp('title', resposta['title']);
+                    eventoExiste.setProp('color', resposta['color']);
+                    eventoExiste.setStart(resposta['start']);
+                    eventoExiste.setEnd(resposta['end']);
+                }
+
+                //chamar a função para remover a mensagem após 3 segundos
+                removerMsg();
+
+                // fechar a janela modal
+                visualizarModal.hide();
+
+            }
+
+            // Apresentar no botão o texto salvar
+            btnEditEvento.value = "Salvar";
+        });
+    }
+
+    // Receber o SELETOR exlcuir evento
+    const btnApagarEvento = document.getElementById("btnApagarEvento");
+
+    if(btnApagarEvento){
+
+        // Aguardar o úsuario clicar no botão excluir
+        btnApagarEvento.addEventListener("click", async () => {
+            
+            // Exibir uma caixa de diálogode de confirmação
+            const confirmacao = window.confirm("Tem certeza de que deseja apagar este evento?");
+
+            if(confirmacao){
+
+                //receber o id do evento
+                var idEvento = document.getElementById("visualizar_id").textContent;
+
+                // Chamar o arquivo PHP responsavel excluir o evento
+                const dados = await fetch("apagar_evento.php?id=" + idEvento);
+
+                //Realizar a leitura dos dados retornados pelo PHP
+                const resposta = await dados.json();
+
+                //Acessa o IF quando não cadastrar com sucesso
+                if(!resposta['status']){
+
+                    // Enviar a mensagem para o HTML
+                    msgViewEvento.innerHTML = `<div class="alert alert-danger" role="alert">${resposta['msg']}</div>`;
+                } else {
+
+                    // Enviar a mensagem para o HTML
+                    msg.innerHTML = `<div class="alert alert-success" role="alert">${resposta['msg']}</div>`;
+
+                    // Enviar a mensagem para o HTML
+                    msgViewEvento.innerHTML = "";
+
+                    // Recuperar o evento no FullCalendar
+                    const eventoExisteRemover = calendar.getEventById(idEvento);
+
+                    // Verificar se encontrou o evento no FullCalendar
+                    if(eventoExisteRemover){
+
+                        // Remover o evento do calendário
+                        eventoExisteRemover.remove();
+                    }
+
+                    // Chamar a função para remover a mensagem após 3 segundo
+                    removerMsg();
+
+                    // Fechar a janela modal
+                    visualizarModal.hide();
+
+                }
+                
+
+            }
+        })
+    }
+
 });
